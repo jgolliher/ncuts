@@ -1,14 +1,23 @@
 import dash
 from dash import html, dcc, callback, Input, Output
 import plotly.graph_objects as go
-from styles import SIDEBAR_STYLE, CONTENT_STYLE
 import pandas as pd
 
 # Register the page
 dash.register_page(__name__, path="/", name="Time Standards")
 
+# Responsive styles
+SIDEBAR_STYLE = {
+    "padding": "2rem 1rem",
+    "backgroundColor": "#f8f9fa",
+    "borderRadius": "8px",
+    "marginBottom": "1rem",
+}
 
-# Get the data from a function to avoid circular imports
+CONTENT_STYLE = {
+    "padding": "1rem",
+}
+
 def get_data():
     df = pd.read_csv("2022-03-03 - NCAA Cuts - Sheet1.csv")
     df["Year"] = pd.to_numeric(df["Year"])
@@ -23,37 +32,27 @@ def get_data():
     df["TimeSeconds"] = df["Time"].apply(convert_to_seconds)
     return df
 
-
-# Create the layout
 def layout():
     df = get_data()
-    sidebar = html.Div(
+    
+    filters = html.Div(
         [
-            html.H2("Filters", className="display-4", style={"fontSize": "2rem"}),
-            html.Hr(),
+            html.H2("Filters", style={"fontSize": "1.5rem", "marginBottom": "1rem"}),
             html.Div(
                 [
-                    html.Label(
-                        "Event:", style={"fontWeight": "bold", "marginBottom": "5px"}
-                    ),
+                    html.Label("Event:", style={"fontWeight": "bold", "display": "block", "marginBottom": "0.5rem"}),
                     dcc.Dropdown(
                         id="event-filter",
-                        options=[
-                            {"label": x, "value": x} for x in df["Event"].unique()
-                        ],
+                        options=[{"label": x, "value": x} for x in df["Event"].unique()],
                         value=df["Event"].iloc[0],
-                        style={"marginBottom": "15px"},
+                        style={"marginBottom": "1rem"},
                     ),
-                    html.Label(
-                        "Gender:", style={"fontWeight": "bold", "marginBottom": "5px"}
-                    ),
+                    html.Label("Gender:", style={"fontWeight": "bold", "display": "block", "marginBottom": "0.5rem"}),
                     dcc.Dropdown(
                         id="gender-filter",
-                        options=[
-                            {"label": x, "value": x} for x in df["Gender"].unique()
-                        ],
+                        options=[{"label": x, "value": x} for x in df["Gender"].unique()],
                         value=df["Gender"].iloc[0],
-                        style={"marginBottom": "15px"},
+                        style={"marginBottom": "1rem"},
                     ),
                 ],
             ),
@@ -61,23 +60,30 @@ def layout():
         style=SIDEBAR_STYLE,
     )
 
-    content = html.Div(
+    return html.Div(
         [
-            html.H1(
-                "Time Standards Progression",
-                style={
-                    "textAlign": "center",
-                    "marginBottom": "30px",
-                    "color": "#2c3e50",
-                },
+            filters,
+            html.Div(
+                [
+                    html.H1(
+                        "Time Standards Progression",
+                        style={
+                            "textAlign": "center",
+                            "marginBottom": "1.5rem",
+                            "fontSize": "calc(1.5rem + 1vw)",
+                            "color": "#2c3e50",
+                        },
+                    ),
+                    dcc.Graph(
+                        id="time-series-graph",
+                        style={"height": "calc(70vh - 100px)"},
+                        config={'responsive': True}
+                    ),
+                ],
+                style=CONTENT_STYLE,
             ),
-            dcc.Graph(id="time-series-graph", style={"height": "80vh"}),
-        ],
-        style=CONTENT_STYLE,
+        ]
     )
-
-    return html.Div([sidebar, content])
-
 
 @callback(
     Output("time-series-graph", "figure"),
@@ -106,21 +112,33 @@ def update_graph(event, gender):
             )
 
     fig.update_layout(
-        title=dict(text=f"{event} - {gender}", font=dict(size=24), x=0.5, y=0.95),
+        title=dict(
+            text=f"{event} - {gender}",
+            font=dict(size=20),
+            x=0.5,
+            y=0.95
+        ),
         xaxis_title="Year",
         yaxis_title="Time (seconds)",
         hovermode="x unified",
         showlegend=True,
         legend=dict(
-            yanchor="top",
-            y=0.99,
-            xanchor="left",
-            x=0.01,
-            bgcolor="rgba(255, 255, 255, 0.8)",
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="right",
+            x=1
         ),
         plot_bgcolor="white",
         paper_bgcolor="white",
-        margin=dict(t=100),
+        margin=dict(t=100, l=50, r=50, b=50),
+    )
+
+    # Make the graph more mobile-friendly
+    fig.update_layout(
+        autosize=True,
+        height=500,  # Fixed height for mobile
+        xaxis=dict(tickangle=45),  # Angled labels for better mobile viewing
     )
 
     fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor="#f0f0f0")
