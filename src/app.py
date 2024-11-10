@@ -7,6 +7,8 @@ import styles as styles
 # Initialize the app with url routing
 app = Dash(__name__, use_pages=True)
 
+server = app.server
+
 # Read and process data - make it available globally
 df = pd.read_csv("2022-03-03 - NCAA Cuts - Sheet1.csv")
 df["Year"] = pd.to_numeric(df["Year"])
