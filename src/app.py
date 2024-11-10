@@ -1,18 +1,22 @@
+# app.py
 from dash import Dash, dcc, html, page_container
 import dash
 import pandas as pd
-import styles as styles
 
-
-# Initialize the app with url routing
-app = Dash(__name__, use_pages=True)
+# Initialize the app with url routing and meta viewport tag for mobile
+app = Dash(
+    __name__, 
+    use_pages=True,
+    meta_tags=[
+        {"name": "viewport", "content": "width=device-width, initial-scale=1.0"}
+    ]
+)
 
 server = app.server
 
-# Read and process data - make it available globally
+# Read and process data
 df = pd.read_csv("2022-03-03 - NCAA Cuts - Sheet1.csv")
 df["Year"] = pd.to_numeric(df["Year"])
-
 
 def convert_to_seconds(time_str):
     try:
@@ -21,12 +25,28 @@ def convert_to_seconds(time_str):
         minutes, seconds = map(float, time_str.split(":"))
         return minutes * 60 + seconds
 
-
 df["TimeSeconds"] = df["Time"].apply(convert_to_seconds)
 
-df.dtypes
+# Responsive styles
+NAVBAR_STYLE = {
+    "padding": "1rem",
+    "background-color": "#333",
+    "color": "white",
+}
 
-# Create the navbar
+NAVBAR_MOBILE = {
+    "flexDirection": "column",
+    "alignItems": "center",
+    "gap": "1rem",
+}
+
+NAVBAR_DESKTOP = {
+    "display": "flex",
+    "justifyContent": "space-between",
+    "alignItems": "center",
+}
+
+# Create the responsive navbar
 navbar = html.Div(
     [
         html.Div("NCAA Swimming", style={"fontSize": "1.5rem", "fontWeight": "bold"}),
@@ -35,28 +55,30 @@ navbar = html.Div(
                 dcc.Link(
                     f"{page['name']}",
                     href=page["relative_path"],
-                    style=styles.NAV_LINK_STYLE,
+                    style={
+                        "color": "white",
+                        "textDecoration": "none",
+                        "padding": "0.5rem",
+                        "borderRadius": "4px",
+                    },
                     className="nav-link",
                 )
                 for page in dash.page_registry.values()
             ],
-            style={"display": "flex", "gap": "10px"},
+            style={"display": "flex", "gap": "10px", "flexWrap": "wrap", "justifyContent": "center"},
         ),
     ],
-    style={
-        **styles.NAVBAR_STYLE,
-        "position": "fixed",
-        "top": 0,
-        "left": 0,
-        "right": 0,
-        "zIndex": 1000,
-    },
+    style=NAVBAR_STYLE,
+    className="navbar",
 )
 
 # Define the app layout
-app.layout = html.Div([navbar, page_container])
+app.layout = html.Div([
+    navbar,
+    html.Div(page_container, style={"marginTop": "1rem", "padding": "1rem"})
+])
 
-# Add some CSS to style the nav links
+# Add responsive CSS
 app.index_string = """
 <!DOCTYPE html>
 <html>
@@ -68,6 +90,20 @@ app.index_string = """
         <style>
             .nav-link:hover {
                 background-color: #555;
+            }
+            
+            /* Mobile styles */
+            @media (max-width: 768px) {
+                .navbar {
+                    flex-direction: column;
+                    align-items: center;
+                    text-align: center;
+                }
+                
+                .nav-link {
+                    width: 100%;
+                    text-align: center;
+                }
             }
         </style>
     </head>
