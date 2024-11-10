@@ -16,6 +16,7 @@ exceptiongroup==1.2.0
 executing==0.8.3
 Flask==3.0.3
 Flask-Compress==1.13
+gunicorn
 idna==3.7
 importlib-metadata==7.0.1
 ipykernel==6.29.5
