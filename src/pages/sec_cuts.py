@@ -1,17 +1,16 @@
 import dash
 from dash import html
-import plotly.express as px
 
-dash.register_page(__name__, name="Analysis")
+dash.register_page(__name__, name="SEC Cuts")
 
 layout = html.Div(
     [
         html.H1(
-            "Cut Time Analysis",
+            "SEC Cuts",
             style={"textAlign": "center", "marginBottom": "30px", "color": "#2c3e50"},
         ),
         html.P(
-            "This page will contain additional analysis of the cut times.",
+            "This page will contain SEC cuts",
             style={"textAlign": "center"},
         ),
     ],

@@ -5,11 +5,11 @@ import pandas as pd
 
 # Initialize the app with url routing and meta viewport tag for mobile
 app = Dash(
-    __name__, 
+    __name__,
     use_pages=True,
     meta_tags=[
         {"name": "viewport", "content": "width=device-width, initial-scale=1.0"}
-    ]
+    ],
 )
 
 server = app.server
@@ -18,12 +18,14 @@ server = app.server
 df = pd.read_csv("2022-03-03 - NCAA Cuts - Sheet1.csv")
 df["Year"] = pd.to_numeric(df["Year"])
 
+
 def convert_to_seconds(time_str):
     try:
         return float(time_str)
     except ValueError:
         minutes, seconds = map(float, time_str.split(":"))
         return minutes * 60 + seconds
+
 
 df["TimeSeconds"] = df["Time"].apply(convert_to_seconds)
 
@@ -65,7 +67,12 @@ navbar = html.Div(
                 )
                 for page in dash.page_registry.values()
             ],
-            style={"display": "flex", "gap": "10px", "flexWrap": "wrap", "justifyContent": "center"},
+            style={
+                "display": "flex",
+                "gap": "10px",
+                "flexWrap": "wrap",
+                "justifyContent": "center",
+            },
         ),
     ],
     style=NAVBAR_STYLE,
@@ -73,10 +80,9 @@ navbar = html.Div(
 )
 
 # Define the app layout
-app.layout = html.Div([
-    navbar,
-    html.Div(page_container, style={"marginTop": "1rem", "padding": "1rem"})
-])
+app.layout = html.Div(
+    [navbar, html.Div(page_container, style={"marginTop": "1rem", "padding": "1rem"})]
+)
 
 # Add responsive CSS
 app.index_string = """
@@ -105,6 +111,36 @@ app.index_string = """
                     text-align: center;
                 }
             }
+    @media (min-width: 768px) {
+        .filters-container {
+            flex-direction: row;
+            flex-wrap: wrap;
+        }
+        
+        .sidebar {
+            margin-bottom: 0.5rem;
+        }
+    }
+    
+    @media (max-width: 767px) {
+        .filters-container {
+            flex-direction: column;
+        }
+        
+        .filters-container > div {
+            width: 100% !important;  /* Override fixed widths on mobile */
+            margin-right: 0 !important;
+        }
+        
+        .filters-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .sidebar {
+            margin-bottom: 1rem;
+        }
+    }
         </style>
     </head>
     <body>
@@ -116,6 +152,7 @@ app.index_string = """
         </footer>
     </body>
 </html>
+
 """
 
 if __name__ == "__main__":
